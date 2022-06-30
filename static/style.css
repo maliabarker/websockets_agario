@@ -1,8 +1,8 @@
-#circle {
-    position:absolute;
-    transform:translate(-50%,-50%);
-    height:35px;
-    width:35px;
-    border-radius:50%;
-    border:2px solid black;
+#user-circle {
+    position: absolute;
+    transform: translate(-50%,-50%);
+    height: 35px;
+    width: 35px;
+    border-radius: 50%;
+    background-color: hsl(230, 100, 50);
 }
