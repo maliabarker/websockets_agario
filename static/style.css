@@ -4,7 +4,7 @@
     height: 35px;
     width: 35px;
     border-radius: 50%;
-    background-color: red;
+    background-color: hsl(19, 100%, 50%);
     /* background-color: hsl(230, 100, 50); */
 }
 
