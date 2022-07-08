@@ -6,6 +6,8 @@ const { Server } = require("socket.io");
 const io = new Server(server);
 const path = require('path');
 
+
+
 allCircles = []
 
 
@@ -16,43 +18,48 @@ app.get('/', (req, res) => {
   res.sendFile(__dirname + '/index.html');
 });
 
+
 io.on('connection', (socket) => {
 
-    // MVP:
-    // create new circle on connection
-    // append circle to all circles list
-    // load in all circles
-    // allow all circles to move
-    // delete circle from list on disconnect
+    // —MVP:—
+    // DONE create new circle on connection
+    // DONE append circle to all circles list
+    // DONE delete circle from list on disconnect
 
-    // EXTRA:
+    // TODO load in all circles
+    // TODO allow all circles to move
+        // *note: make sure user can control only their circle on connection
+    // TODO allow for collision detection
+    // TODO add dots that grow circle
+
+    // —EXTRA:—
     // allow users to create username
-    // add food to grow circle
-    // allow for collision detection
     // have a restart button or function
 
-    // TODO: create new circle for each user on connection 
-    // *note: make sure user can control only their circle on connection
 
-    console.log(`${socket.id} connected`);
-
-    // emits connection message to all users
-    io.sockets.emit('connect message', socket.id);
-
-    socket.on('new circle', (circleData) => {
+    socket.on('createPlayer', (circleData, username) => {
         circleData.socketId = socket.id;
+        circleData.playerUsername = username;
+        // circleData.username = username;
         allCircles.push(circleData);
 
         console.log(circleData);
         console.log(allCircles);
 
+        // emits connection message to all users
+        io.sockets.emit('connectMsg', username);
+        // io.sockets.emit('drawCircles', allCircles);
+
+        // draw game only for current socket
+        socket.emit('drawGame', allCircles);
+
+        // // place player on all other sockets games
+        // socket.broadcast.emit('placePlayer');
+
         // socket.broadcast.emit('place-me-at-all-clients-screen', data);
         // socket.emit('place-all-clients-to-my-screen', onlineCircles);
         // socket.emit('place-all-foods', foods);
     });
-
-    // only emits to single user's server
-    // socket.emit('new circle')
 
 
     // remove circle from array on disconnect
@@ -66,16 +73,10 @@ io.on('connection', (socket) => {
             };
         });
     });
-
-    // for emitting connection msg to all users
-    // socket.on('new connection', (msg) => {
-    //     console.log('message: ' + msg);
-    //     io.emit('new connection', msg);
-    // });
+    
 });
+
 
 server.listen(3000, () => {
   console.log('listening on *:3000');
 });
-
-module.exports = io
