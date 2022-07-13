@@ -10,7 +10,7 @@ class Circle {
         this.x = Math.floor(Math.random() * window.screen.width);
         this.y = Math.floor(Math.random() * window.screen.height);
         this.hue = Math.floor(Math.random() * 360);
-        this.size = 20;
+        this.size = 30;
     };
 };
 
@@ -24,29 +24,24 @@ const circleContainer = document.getElementById("circleContainer");
 
 startBtn.addEventListener('click', startGame);
 
-function allowMovement() {
-    document.onmousemove = function(e) {
-        // console.log('moving')
-        // circle.style.left = e.pageX + 'px';
-        // circle.style.top = e.pageY + 'px';
-        socket.emit('moveMouse', {x: e.pageX, y: e.pageY})
-    };
-}
+// —————————————————————————————————————————————————————— //
 
 function startGame() {
 
     const username = usernameInput.value;
     console.log(`${username} joined the game`);
+    console.log(window.screen.width)
+    console.log(window.screen.height)
 
     // get rid of username input screen
     initialScreen.style.display = 'none';
     gameScreen.style.display = 'block';
 
-
     // Creating a new circle and emitting to server
     var circle = new Circle();
     socket.emit('createPlayer', circle, username);
 
+    // download all circles (including player) onto the socket screen
     socket.on('downloadCircles', function(allCircles, socketId) {
         allCircles.forEach(function(element) {
             console.log(socketId);
@@ -93,7 +88,7 @@ function startGame() {
         });
     });
     
-    
+    // upload circle to all other socket screens
     socket.on('uploadCircle', function(playerCircle) {
         var circleEle = document.createElement('div');
         circleEle.setAttribute('id', playerCircle._id);
@@ -110,11 +105,34 @@ function startGame() {
         
         circleContainer.appendChild(circleEle);
     });
+
+    // display food to all players
+    socket.on('displayFood', function(food) {
+        foodContainer = document.getElementById('foodContainer')
+        food.forEach(function(element) {
+            console.log(element)
+            var foodDiv = document.createElement('div');
+            foodDiv.setAttribute('id', element._id)
+            foodDiv.setAttribute(
+                'style',
+                `display: block;
+                    position: absolute; 
+                    transform: translate(-50%, -50%);
+                    height: ${element.size}px;
+                    width: ${element.size}px;
+                    left: ${element.x}px;
+                    top: ${element.y}px;
+                    border-radius: 50%;
+                    background-color: hsl(${element.hue}, 100%, 50%);`
+            );
+            foodContainer.appendChild(foodDiv)
+        });
+    });
 };
 
 
+// —————————————————————————————————————————————————————— //
 
-// ——————————————————————————————————————————————————————
 
 // will emit connection message to all users (sockets)
 socket.on('connectMsg', function(msg) {
@@ -127,11 +145,9 @@ socket.on('connectMsg', function(msg) {
     }, 3000);
 });
 
+// move circles with coordinate data from mousemove
 socket.on('moveCircles', function(coords, socketId) {
-    console.log(socketId)
-
     if (document.body.contains(document.getElementById(socketId))) {
-        console.log('Element found')
         var element = document.getElementById(socketId)
         element.style.left = `${coords.x}px`;
         element.style.top = `${coords.y}px`;
@@ -145,4 +161,3 @@ socket.on('disconnectPlayer', function(socket_id) {
         player.remove()
     };
 });
-

@@ -7,7 +7,17 @@ const { Server } = require("socket.io");
 const io = new Server(server);
 const path = require('path');
 
+var Food = require('./objects')
+
 allCircles = []
+allFood = []
+
+// create all food so everyone has the same food
+for (let i = 0; i < 50; i++) {
+    var food = new Food()
+    allFood.push(food)
+}
+
 
 const HTML_DIR = path.join(__dirname, '/static/')
 app.use(express.static(HTML_DIR))
@@ -19,29 +29,21 @@ app.get('/', (req, res) => {
 
 io.on('connection', (socket) => {
     // —MVP:—
-    // DONE create new circle on connection
-    // DONE append circle to all circles list
-    // DONE delete circle from list on disconnect
-
-    // TODO load in all circles
-    // TODO allow all circles to move
-        // *note: make sure user can control only their circle on connection
     // TODO allow for collision detection
-    // TODO add dots that grow circle
+    // TODO remove and add new food when collided
+    // TODO grow circle with more points
 
-    // —EXTRA:—
-    // allow users to create username
-    // have a restart button or function
+    // TODO allow collisions for circles so they can 'eat' eachother
+    // TODO change velocity with growth
+    // TODO create a gameover screen and restart button
 
-
+    // on create player (new game initiated)
     socket.on('createPlayer', (circleData, username) => {
         circleData._id = socket.id;
         circleData.playerUsername = username;
+
         playerCircle = circleData;
         allCircles.push(playerCircle);
-        
-        console.log(playerCircle);
-        console.log(allCircles.length);
 
         // emits connection message to all users
         socket.broadcast.emit('connectMsg', username);
@@ -52,15 +54,24 @@ io.on('connection', (socket) => {
         // place circle at all other socket screens
         socket.broadcast.emit('uploadCircle', playerCircle);
         
-        // socket.emit('place-all-foods', foods);
+        // place all food at all players' screens
+        socket.emit('displayFood', allFood);
     });
 
+
+    // broadcasts & moves circle on other people's socket
     socket.on('moveMouse', function(data) {
-        // moves player circle
-        // io.sockets.emit('moveCircles', {session_id: socket.id, coords: data, playerCircle: playerCircle})
-        console.log('moving')
-        // broadcasts & moves circle on other people's socket
         socket.broadcast.emit('moveCircles', data, socket.id);
+        
+        // MAYBE CHECK FOR COLLISION HERE?
+        /* 
+        create boundaries for circle
+        in foreach loop for all foods:
+            create boundaries for food
+            if boundaries of circle and food overlap:
+                remove food and add point (or mass)
+                create/place new food
+        */
     });
 
 
@@ -76,7 +87,6 @@ io.on('connection', (socket) => {
         });
         socket.broadcast.emit('disconnectPlayer', socket.id)
     });
-    
 });
 
 
