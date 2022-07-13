@@ -154,6 +154,31 @@ socket.on('moveCircles', function(coords, socketId) {
     };
 });
 
+// remove food
+socket.on('removeFood', function(foodObj) {
+    var food = document.getElementById(foodObj._id)
+    food.remove()
+});
+
+socket.on('addFood', function(newFood) {
+    foodContainer = document.getElementById('foodContainer')
+    var foodDiv = document.createElement('div');
+    foodDiv.setAttribute('id', newFood._id)
+    foodDiv.setAttribute(
+        'style',
+        `display: block;
+            position: absolute; 
+            transform: translate(-50%, -50%);
+            height: ${newFood.size}px;
+            width: ${newFood.size}px;
+            left: ${newFood.x}px;
+            top: ${newFood.y}px;
+            border-radius: 50%;
+            background-color: hsl(${newFood.hue}, 100%, 50%);`
+    );
+    foodContainer.appendChild(foodDiv);
+})
+
 // delete circle on disconnect
 socket.on('disconnectPlayer', function(socket_id) {
     if (document.body.contains(document.getElementById(socket_id))) {

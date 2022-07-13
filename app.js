@@ -58,20 +58,39 @@ io.on('connection', (socket) => {
         socket.emit('displayFood', allFood);
     });
 
-
     // broadcasts & moves circle on other people's socket
     socket.on('moveMouse', function(data) {
         socket.broadcast.emit('moveCircles', data, socket.id);
-        
-        // MAYBE CHECK FOR COLLISION HERE?
-        /* 
-        create boundaries for circle
-        in foreach loop for all foods:
-            create boundaries for food
-            if boundaries of circle and food overlap:
-                remove food and add point (or mass)
-                create/place new food
-        */
+
+        // collision detection, checks with movement
+        const circle = allCircles.find(element => element._id == socket.id);
+        if (circle) {
+            allFood.forEach(element => {
+                
+                xBound = element.x - data.x;
+                yBound = element.y - data.y;
+                
+                d = Math.sqrt(Math.pow(xBound, 2) + Math.pow(yBound, 2));
+                r = element.size/2 + circle.size/2;
+
+                if (d<=r) {
+                    console.log('food collision');
+                    // remove food and add point (or mass)
+
+                    const index = allFood.indexOf(element);
+                    allFood.splice(index, 1);
+                    console.log(`${food._id} food removed!`)
+                    
+                    io.sockets.emit('removeFood', element)
+
+                    if (allFood.length < 100) {
+                        newFood = new Food()
+                        allFood.push(newFood)
+                        io.sockets.emit('addFood', newFood)
+                    };  
+                };
+            });
+        };
     });
 
 
