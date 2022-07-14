@@ -63,8 +63,12 @@ function startGame() {
                 
                 circleContainer.appendChild(circleEle);
                 const onMouseMove = (e) => {
+                    element.x = e.pageX
+                    element.y = e.pageY
                     circleEle.style.left = e.pageX + 'px';
                     circleEle.style.top = e.pageY + 'px';
+
+                    // circleEle.style.transform = `translate(${e.pageX}px,${e.pageY}px)`
                     socket.emit('moveMouse', {x: e.pageX, y: e.pageY})
                 }
 
@@ -101,7 +105,8 @@ function startGame() {
                 height: ${playerCircle.size}px;
                 width: ${playerCircle.size}px;
                 border-radius: 50%;
-                background-color: hsl(${playerCircle.hue}, 100%, 50%);`
+                background-color: hsl(${playerCircle.hue}, 100%, 50%);
+                `
         );
         
         circleContainer.appendChild(circleEle);
@@ -147,9 +152,12 @@ socket.on('connectMsg', function(msg) {
 });
 
 // move circles with coordinate data from mousemove
-socket.on('moveCircles', function(coords, socketId) {
-    if (document.body.contains(document.getElementById(socketId))) {
-        var element = document.getElementById(socketId)
+socket.on('moveCircles', function(coords, circle) {
+    if (document.body.contains(document.getElementById(circle._id))) {
+        var element = document.getElementById(circle._id)
+        // element.style.transform = `translate(${coords.x}px,${coords.y}px)`
+        circle.x = coords.x
+        circle.y = coords.y
         element.style.left = `${coords.x}px`;
         element.style.top = `${coords.y}px`;
     };

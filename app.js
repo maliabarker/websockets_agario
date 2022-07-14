@@ -7,6 +7,15 @@ const { Server } = require("socket.io");
 const io = new Server(server);
 const path = require('path');
 
+const HTML_DIR = path.join(__dirname, '/static/')
+app.use(express.static(HTML_DIR))
+
+app.get('/', (req, res) => {
+    res.sendFile(__dirname + '/index.html');
+});
+
+
+// —————————————————————————————Create Gamestate—————————————————————————————————————————————————
 var Food = require('./objects')
 
 allCircles = []
@@ -18,18 +27,9 @@ for (let i = 0; i < 50; i++) {
     allFood.push(food)
 }
 
-
-const HTML_DIR = path.join(__dirname, '/static/')
-app.use(express.static(HTML_DIR))
-
-app.get('/', (req, res) => {
-    res.sendFile(__dirname + '/index.html');
-});
-
-
 io.on('connection', (socket) => {
     // —MVP:—
-    
+
     // TODO change velocity with growth
     // TODO allow collisions for circles so they can 'eat' eachother
     
@@ -57,13 +57,14 @@ io.on('connection', (socket) => {
         socket.emit('displayFood', allFood);
     });
 
+
+    // —————————————————————————————Handle Movement & Collisions—————————————————————————————————————————————————
     // broadcasts & moves circle on other people's socket
     socket.on('moveMouse', function(data) {
-        socket.broadcast.emit('moveCircles', data, socket.id);
-
-        // collision detection, checks with movement
         const circle = allCircles.find(element => element._id == socket.id);
+        // collision detection, checks with movement
         if (circle) {
+            socket.broadcast.emit('moveCircles', data, circle);
             allFood.forEach(element => {
                 
                 xBound = element.x - data.x;
@@ -94,10 +95,28 @@ io.on('connection', (socket) => {
                     };
                 };
             });
+
+            allCircles.forEach(element => {
+                if (element._id != socket.id) {
+                    console.log(`your position ${element.x} their position ${data.x}`)
+                    xBound = element.x - data.x;
+                    yBound = element.y - data.y;
+                    
+                    d = Math.sqrt(Math.pow(xBound, 2) + Math.pow(yBound, 2));
+                    r = element.size/2 + circle.size/2;
+
+                    if (d <= r) {
+                        // collision detected
+                        console.log(`your mass ${circle.size}`)
+                        console.log(`their mass ${element.size}`)
+                    }
+                };
+            });
+
         };
     });
 
-
+    // —————————————————————————————Handle Disconnection—————————————————————————————————————————————————
     // remove circle from array on disconnect
     socket.on('disconnect', function() {
         console.log(`${socket.id} disconnected`);
