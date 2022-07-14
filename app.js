@@ -29,13 +29,12 @@ app.get('/', (req, res) => {
 
 io.on('connection', (socket) => {
     // —MVP:—
-    // TODO allow for collision detection
-    // TODO remove and add new food when collided
-    // TODO grow circle with more points
-
-    // TODO allow collisions for circles so they can 'eat' eachother
+    
     // TODO change velocity with growth
+    // TODO allow collisions for circles so they can 'eat' eachother
+    
     // TODO create a gameover screen and restart button
+    // TODO (bug) some added foods do not remove for some reason
 
     // on create player (new game initiated)
     socket.on('createPlayer', (circleData, username) => {
@@ -73,21 +72,26 @@ io.on('connection', (socket) => {
                 d = Math.sqrt(Math.pow(xBound, 2) + Math.pow(yBound, 2));
                 r = element.size/2 + circle.size/2;
 
-                if (d<=r) {
-                    console.log('food collision');
-                    // remove food and add point (or mass)
+                if (d <= r) {
 
                     const index = allFood.indexOf(element);
                     allFood.splice(index, 1);
-                    console.log(`${food._id} food removed!`)
+
+                    console.log(`${element._id} food removed!`)
                     
                     io.sockets.emit('removeFood', element)
 
+                    circle.size += 1
+
+                    socket.emit('addPoint', element.size)
+
+                    io.sockets.emit('addMass', circle)
+                    
                     if (allFood.length < 100) {
                         newFood = new Food()
                         allFood.push(newFood)
                         io.sockets.emit('addFood', newFood)
-                    };  
+                    };
                 };
             });
         };

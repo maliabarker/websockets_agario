@@ -20,6 +20,7 @@ const gameScreen = document.getElementById('gameScreen');
 const startBtn = document.getElementById('joinGameBtn');
 const usernameInput = document.getElementById('username');
 const circleContainer = document.getElementById("circleContainer");
+var points = 0;
 
 
 startBtn.addEventListener('click', startGame);
@@ -157,12 +158,17 @@ socket.on('moveCircles', function(coords, socketId) {
 // remove food
 socket.on('removeFood', function(foodObj) {
     var food = document.getElementById(foodObj._id)
+    if (food) {
+        console.log(`removing ${foodObj._id}`)
+    }
     food.remove()
 });
 
+// add new food
 socket.on('addFood', function(newFood) {
     foodContainer = document.getElementById('foodContainer')
     var foodDiv = document.createElement('div');
+    console.log(`adding ${newFood._id}`)
     foodDiv.setAttribute('id', newFood._id)
     foodDiv.setAttribute(
         'style',
@@ -178,6 +184,20 @@ socket.on('addFood', function(newFood) {
     );
     foodContainer.appendChild(foodDiv);
 })
+
+// add points only on socket's screen
+socket.on('addPoint', function(count) {
+    points += count;
+    pointDiv = document.getElementById('pointsCount');
+    pointDiv.innerHTML = points;
+});
+
+// grow circle on all other screens
+socket.on('addMass', function(circle) {
+    var circleDiv = document.getElementById(circle._id);
+    circleDiv.style.height = circle.size + 'px'
+    circleDiv.style.width = circle.size + 'px'
+});
 
 // delete circle on disconnect
 socket.on('disconnectPlayer', function(socket_id) {
