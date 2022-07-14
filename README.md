@@ -6,6 +6,8 @@ Players load in as a small circle and grow by consuming food or other players. E
 
 To play, clone this repo and install all dependencies in the packages.json file. Then simply run nodemon and you're good to go!
 
+OR you could go to https://websockets-final.herokuapp.com/ (although it is slow)
+
 ## Why Use Websockets?
 Websockets are used to update movement and food consumption in real time. By using websockets, players are able to accurately play with one another without any delays.
 
